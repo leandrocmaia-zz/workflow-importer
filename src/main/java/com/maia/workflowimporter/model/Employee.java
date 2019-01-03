@@ -3,8 +3,9 @@ package com.maia.workflowimporter.model;
 import lombok.Data;
 
 @Data
-public class Employee {
+public class Employee extends Assignee {
     String id;
-    String name;
-    String email;
+
+    public Employee() {
+    }
 }

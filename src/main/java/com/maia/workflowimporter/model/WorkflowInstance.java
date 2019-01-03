@@ -6,7 +6,7 @@ import lombok.Data;
 public class WorkflowInstance {
     Long id;
     Workflow workflow;
-    Contractor assignee;
+    Assignee assignee;
     String step;
     Status status;
 

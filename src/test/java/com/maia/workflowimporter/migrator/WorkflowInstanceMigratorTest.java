@@ -36,7 +36,7 @@ public class WorkflowInstanceMigratorTest {
     @Test
     public void should_read_eachline_and_populate_object() {
         assertEquals(migrator.getWorkflowInstances().size(), 18);
-        assertEquals(migrator.getWorkflowInstancesWithError().size(), 11);
+        assertEquals(migrator.getWorkflowInstancesWithError().size(), 2);
         assertEquals(migrator.getLinesOutsideLoop().size(), 2);
     }
 
@@ -50,7 +50,7 @@ public class WorkflowInstanceMigratorTest {
                 new WorkflowMigrator(workflowsData));
 
         assertEquals(migrator.getWorkflowInstances().size(), 4);
-        assertEquals(migrator.getWorkflowInstancesWithError().size(), 4);
+        assertEquals(migrator.getWorkflowInstancesWithError().size(), 2);
         assertEquals(migrator.getLinesOutsideLoop().size(), 4);
     }
 

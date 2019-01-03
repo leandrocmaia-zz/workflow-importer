@@ -2,15 +2,14 @@ package com.maia.workflowimporter.migrator;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.maia.workflowimporter.model.Contractor;
-import com.maia.workflowimporter.model.Workflow;
-import com.maia.workflowimporter.model.WorkflowInstance;
+import com.maia.workflowimporter.model.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -80,7 +79,6 @@ public class WorkflowInstanceMigrator {
                         workflowInstance.setId(new Long(value));
                     } else if (key.equals("workflowId")) {
                         // lookup workflow
-
                         Workflow workflowLookup = workflowMigrator
                                 .getWorkflows()
                                 .stream()
@@ -95,20 +93,31 @@ public class WorkflowInstanceMigrator {
                         workflowInstance.setWorkflow(workflowLookup);
 
                     } else if (key.equals("assignee")) {
-
+                        Assignee assignee = null;
                         // lookup contractor
-                        Contractor contractor = contractorMigrator
+                        Optional<Contractor> contractor = contractorMigrator
                                 .getContractors()
                                 .stream()
                                 .filter(a -> a.getEmail().equals(value))
-                                .findFirst()
-                                .orElseGet(() -> {
-                                    log.warn("Contractor {} not found in lookup.", value);
-                                    workflowInstancesWithError.add(finalWorkflowInstance);
-                                    return new Contractor(value);
-                                });
+                                .findFirst();
+                        if (contractor.isPresent()) {
+                            assignee = contractor.get();
+                        } else {
+                            // lookup employee
+                            Optional<Employee> employee = employeeMigrator
+                                    .getEmployees()
+                                    .stream()
+                                    .filter(a -> a.getEmail().equals(value))
+                                    .findFirst();
 
-                        workflowInstance.setAssignee(contractor);
+                            if (employee.isPresent()) {
+                                assignee = employee.get();
+                            } else {
+                                log.warn("Assignee {} not found in lookup contractor/employee.", value);
+                                workflowInstancesWithError.add(finalWorkflowInstance);
+                            }
+                        }
+                        workflowInstance.setAssignee(assignee);
                     } else if (key.equals("step")) {
                         workflowInstance.setStep(value);
                     } else if (key.equals("status")) {
@@ -152,7 +161,9 @@ public class WorkflowInstanceMigrator {
         log.info("All contractors who are assigned to instances: {}",
                 gson.toJson(
                         running.stream()
-                                .map(a-> a.getAssignee().getName() != null ? a.getAssignee().getName() : a.getAssignee().getEmail())
+                                .filter(Contractor.class::isInstance)
+                                .map(Contractor.class::cast)
+                                .map(a-> a.getName())
                                 .collect(toList())
                 ));
     }
