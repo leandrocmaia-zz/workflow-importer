@@ -112,7 +112,7 @@ public class WorkflowInstanceMigrator {
                     } else if (key.equals("step")) {
                         workflowInstance.setStep(value);
                     } else if (key.equals("status")) {
-                        workflowInstance.setStatus(value);
+                        workflowInstance.setStatus(WorkflowInstance.Status.valueOf(value));
                     } else {
                         log.error("Missing attribute: {}", line);
                         workflowInstancesWithError.add(workflowInstance);
@@ -141,7 +141,7 @@ public class WorkflowInstanceMigrator {
         List<WorkflowInstance> running = getWorkflowInstances()
                 .stream()
                 .filter(a -> a.getStatus() != null)
-                .filter(a -> a.getStatus().equals("RUNNING"))
+                .filter(a -> a.getStatus().equals(WorkflowInstance.Status.RUNNING))
                 .collect(toList());
 
         log.info("Workflows with running instances {}: {}",

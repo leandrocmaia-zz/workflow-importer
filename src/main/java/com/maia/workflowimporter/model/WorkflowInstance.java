@@ -8,5 +8,9 @@ public class WorkflowInstance {
     Workflow workflow;
     Contractor assignee;
     String step;
-    String status;
+    Status status;
+
+    public enum Status {
+        RUNNING, NEW, DONE, PAUSED;
+    }
 }
