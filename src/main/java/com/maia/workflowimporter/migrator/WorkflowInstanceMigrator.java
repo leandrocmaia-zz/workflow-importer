@@ -10,10 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -84,7 +81,7 @@ public class WorkflowInstanceMigrator {
                     } else if (key.equals("workflowId")) {
                         // lookup workflow
 
-                        workflowInstance.setWorkflow(workflowMigrator
+                        Workflow workflowLookup = workflowMigrator
                                 .getWorkflows()
                                 .stream()
                                 .filter(a -> a.getId().equals(new Long(value)))
@@ -93,7 +90,9 @@ public class WorkflowInstanceMigrator {
                                     log.warn("Workflow {} not found in lookup.", value);
                                     workflowInstancesWithError.add(finalWorkflowInstance);
                                     return new Workflow(new Long(value));
-                                }));
+                                });
+
+                        workflowInstance.setWorkflow(workflowLookup);
 
                     } else if (key.equals("assignee")) {
 
@@ -139,7 +138,7 @@ public class WorkflowInstanceMigrator {
         log.info(gson.toJson(getWorkflowInstances()));
         log.info("All inconsistent data:");
         log.info("With error / incomplete: {}", gson.toJson(getWorkflowInstancesWithError()));
-        log.info("Lines unparseable: {}", gson.toJson(getLinesOutsideLoop()));
+        log.info("Unparseable lines: {}", gson.toJson(getLinesOutsideLoop()));
 
         List<WorkflowInstance> running = getWorkflowInstances()
                 .stream()
@@ -150,6 +149,14 @@ public class WorkflowInstanceMigrator {
         log.info("Workflows with running instances {}: {}",
                 running.size() +  "/" + getWorkflowInstances().size(),
                 gson.toJson(running));
+
+
+        log.info("All contractors who are assigned to instances: {}",
+                gson.toJson(
+                        running.stream()
+                                .map(a-> a.getAssignee().getName() != null ? a.getAssignee().getName() : a.getAssignee().getEmail())
+                                .collect(toList())
+                ));
     }
 
 }
