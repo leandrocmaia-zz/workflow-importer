@@ -8,4 +8,11 @@ public class Workflow {
     String name;
     String author;
     Integer version;
+
+    public Workflow() {
+    }
+
+    public Workflow(Long id) {
+        this.id = id;
+    }
 }
