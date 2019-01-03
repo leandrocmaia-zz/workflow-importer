@@ -149,7 +149,7 @@ public class WorkflowInstanceMigrator {
 
         log.info("Workflows with running instances {}: {}",
                 running.size() +  "/" + getWorkflowInstances().size(),
-                running);
+                gson.toJson(running));
     }
 
 }
