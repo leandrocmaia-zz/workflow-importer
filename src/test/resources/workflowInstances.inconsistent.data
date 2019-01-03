@@ -1,0 +1,29 @@
+WORKFLOW INSTANCES
+start
+  id         : 1524667587190714616
+  workflowId : 1
+  assignee   : john.doe@company.local
+  step       : approved
+  status     : NEW
+end
+start
+  id         : 8563780828914013865
+  workflowId : 2
+  assignee   : jean.dupont@company.local
+         : supervisor approval
+  status     : DONE
+end
+start
+  id         : 3683228499925040330
+  workflowId : 4711
+  assignee   : f.consultant@example.org
+end
+  step       : supervisor approval
+  status     : NEW
+end
+start
+  id         : 3683228499925040330
+end
+  workflowId : 4711
+  assignee   : f.consultant@example.org
+end
