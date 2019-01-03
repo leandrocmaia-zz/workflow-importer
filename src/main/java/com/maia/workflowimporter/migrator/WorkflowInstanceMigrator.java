@@ -17,8 +17,8 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public class WorkflowInstanceMigrator {
 
-    String[] logicSeparator = {"start", "end"};
-
+    final String[] logicSeparator = {"start", "end"};
+    final String delimiter = ":";
     @Getter
     File file;
     @Getter
@@ -69,8 +69,8 @@ public class WorkflowInstanceMigrator {
                     final WorkflowInstance finalWorkflowInstance = workflowInstance;
 
                     try {
-                        key = line.split(":")[0].trim();
-                        value = line.split(":")[1].trim();
+                        key = line.split(delimiter)[0].trim();
+                        value = line.split(delimiter)[1].trim();
                     } catch (Exception e) {
                         log.error("Error parsing value." , e);
                         workflowInstancesWithError.add(workflowInstance);
@@ -121,17 +121,15 @@ public class WorkflowInstanceMigrator {
                     log.error("Not inside loop: {}", line);
                     linesOutsideLoop.add(line);
                 }
-
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            log.error("File not found. {}", e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error while reading file. {}", e.getMessage());
         }
-
     }
 
-    public void printResults() {
+    public void logSummary() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         log.info("All instances and its workflows:");

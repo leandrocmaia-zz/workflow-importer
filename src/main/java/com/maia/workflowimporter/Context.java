@@ -26,7 +26,7 @@ public class Context {
 					new ContractorMigrator(contractorsData),
 					new WorkflowMigrator(workflowsData));
 
-			migrator.printResults();
+			migrator.logSummary();
 
 		} catch (IOException e) {
 			e.printStackTrace();

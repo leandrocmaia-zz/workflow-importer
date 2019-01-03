@@ -19,7 +19,7 @@ public class WorkflowMigratorTest {
     }
 
     @Test
-    public void should_read_employee_file() {
+    public void should_read_file() {
         WorkflowMigrator migrator = new WorkflowMigrator(file);
         assertNotNull(migrator.getFile());
     }

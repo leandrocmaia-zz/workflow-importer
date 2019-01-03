@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class WorkflowInstanceMigratorTest {
 
@@ -30,7 +31,6 @@ public class WorkflowInstanceMigratorTest {
                 new ContractorMigrator(contractorsData),
                 new WorkflowMigrator(workflowsData));
 
-
     }
 
     @Test
@@ -38,7 +38,6 @@ public class WorkflowInstanceMigratorTest {
         assertEquals(migrator.getWorkflowInstances().size(), 18);
         assertEquals(migrator.getWorkflowInstancesWithError().size(), 11);
         assertEquals(migrator.getLinesOutsideLoop().size(), 2);
-        migrator.printResults();
     }
 
     @Test
@@ -53,7 +52,20 @@ public class WorkflowInstanceMigratorTest {
         assertEquals(migrator.getWorkflowInstances().size(), 4);
         assertEquals(migrator.getWorkflowInstancesWithError().size(), 4);
         assertEquals(migrator.getLinesOutsideLoop().size(), 4);
-        migrator.printResults();
     }
 
+    @Test
+    public void should_log_summary() throws IOException {
+
+        File file = new ClassPathResource("workflowInstances.inconsistent.data", getClass().getClassLoader()).getFile();
+
+        WorkflowInstanceMigrator migrator = new WorkflowInstanceMigrator(file,
+                new EmployeeMigrator(employeesData),
+                new ContractorMigrator(contractorsData),
+                new WorkflowMigrator(workflowsData));
+
+        migrator.logSummary();
+        assertTrue(true);
+
+    }
 }

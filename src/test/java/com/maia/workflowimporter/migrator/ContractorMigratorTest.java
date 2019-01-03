@@ -19,7 +19,7 @@ public class ContractorMigratorTest {
     }
 
     @Test
-    public void should_read_employee_file() {
+    public void should_read_file() {
         ContractorMigrator migrator = new ContractorMigrator(file);
         assertNotNull(migrator.getFile());
     }
