@@ -1,5 +1,6 @@
-package com.maia.workflowimporter.migrator;
+package com.maia.workflowimporter.migrator.impl;
 
+import com.maia.workflowimporter.migrator.Migrator;
 import com.maia.workflowimporter.model.Contractor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -9,21 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class ContractorMigrator {
+public class ContractorMigrator extends BaseMigrator implements Migrator {
 
-    String[] logicSeparator = {"start", "end"};
-
-    @Getter
-    File file;
     @Getter
     List<Contractor> contractors = new ArrayList<>();
 
     public ContractorMigrator(File file) {
         this.file = file;
-        parseFile();
     }
 
-    public void parseFile() {
+    @Override
+    public void parse() {
         try (BufferedReader fileBufferReader = new BufferedReader(new FileReader(file))) {
             String l;
             Contractor contractor = null;
@@ -33,21 +30,25 @@ public class ContractorMigrator {
                     contractor = new Contractor();
                 }
                 if (line.contains("contractorName")) {
-                    contractor.setAlias(line.split(" : ")[1]);
+                    contractor.setAlias(line.split(delimiter)[1].trim());
                 } else if (line.contains("fullName")) {
-                    contractor.setName(line.split(" : ")[1]);
+                    contractor.setName(line.split(delimiter)[1].trim());
                 } else if (line.contains("email")) {
-                    contractor.setEmail(line.split(" : ")[1]);
+                    contractor.setEmail(line.split(delimiter)[1].trim());
                 }
                 if (logicSeparator[1].equals((line))) {
                     contractors.add(contractor);
                 }
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            log.error("File not found. {}", e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error while reading file. {}", e.getMessage());
         }
+    }
+
+    @Override
+    public void logSummary() {
 
     }
 

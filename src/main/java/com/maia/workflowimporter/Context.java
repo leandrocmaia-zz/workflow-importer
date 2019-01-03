@@ -1,9 +1,9 @@
 package com.maia.workflowimporter;
 
-import com.maia.workflowimporter.migrator.ContractorMigrator;
-import com.maia.workflowimporter.migrator.EmployeeMigrator;
-import com.maia.workflowimporter.migrator.WorkflowInstanceMigrator;
-import com.maia.workflowimporter.migrator.WorkflowMigrator;
+import com.maia.workflowimporter.migrator.impl.ContractorMigrator;
+import com.maia.workflowimporter.migrator.impl.EmployeeMigrator;
+import com.maia.workflowimporter.migrator.impl.WorkflowInstanceMigrator;
+import com.maia.workflowimporter.migrator.impl.WorkflowMigrator;
 
 import java.io.File;
 

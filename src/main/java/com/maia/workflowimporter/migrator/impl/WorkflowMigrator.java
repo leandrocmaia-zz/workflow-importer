@@ -1,5 +1,6 @@
-package com.maia.workflowimporter.migrator;
+package com.maia.workflowimporter.migrator.impl;
 
+import com.maia.workflowimporter.migrator.Migrator;
 import com.maia.workflowimporter.model.Workflow;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -9,21 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class WorkflowMigrator {
+public class WorkflowMigrator extends BaseMigrator implements Migrator {
 
-    String[] logicSeparator = {"start", "end"};
-
-    @Getter
-    File file;
     @Getter
     List<Workflow> workflows = new ArrayList<>();
 
     public WorkflowMigrator(File file) {
         this.file = file;
-        parseFile();
     }
 
-    public void parseFile() {
+    @Override
+    public void parse() {
         try (BufferedReader fileBufferReader = new BufferedReader(new FileReader(file))) {
             String l;
             Workflow workflow = null;
@@ -33,23 +30,28 @@ public class WorkflowMigrator {
                     workflow = new Workflow();
                 }
                 if (line.contains("id")) {
-                    workflow.setId(new Long(line.split(":")[1].trim()));
+                    workflow.setId(new Long(line.split(delimiter)[1].trim()));
                 } else if (line.contains("name")) {
-                    workflow.setName(line.split(":")[1].trim());
+                    workflow.setName(line.split(delimiter)[1].trim());
                 } else if (line.contains("author")) {
-                    workflow.setAuthor(line.split(":")[1].trim());
+                    workflow.setAuthor(line.split(delimiter)[1].trim());
                 } else if (line.contains("version")) {
-                    workflow.setVersion(new Integer(line.split(":")[1].trim()));
+                    workflow.setVersion(new Integer(line.split(delimiter)[1].trim()));
                 }
                 if (logicSeparator[1].equals((line))) {
                     workflows.add(workflow);
                 }
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            log.error("File not found. {}", e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error while reading file. {}", e.getMessage());
         }
+
+    }
+
+    @Override
+    public void logSummary() {
 
     }
 

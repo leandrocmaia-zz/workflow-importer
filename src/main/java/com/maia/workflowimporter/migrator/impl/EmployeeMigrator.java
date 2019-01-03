@@ -1,5 +1,6 @@
-package com.maia.workflowimporter.migrator;
+package com.maia.workflowimporter.migrator.impl;
 
+import com.maia.workflowimporter.migrator.Migrator;
 import com.maia.workflowimporter.model.Employee;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -9,21 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class EmployeeMigrator {
+public class EmployeeMigrator extends BaseMigrator implements Migrator {
 
-    String[] logicSeparator = {"start", "end"};
-
-    @Getter
-    File file;
     @Getter
     List<Employee> employees = new ArrayList<>();
 
     public EmployeeMigrator(File file) {
         this.file = file;
-        parseFile();
     }
 
-    public void parseFile() {
+    @Override
+    public void parse() {
         try (BufferedReader fileBufferReader = new BufferedReader(new FileReader(file))) {
             String l;
             Employee employee = null;
@@ -33,21 +30,26 @@ public class EmployeeMigrator {
                     employee = new Employee();
                 }
                 if (line.contains("employeeId")) {
-                    employee.setId(line.split(" : ")[1]);
+                    employee.setId(line.split(delimiter)[1].trim());
                 } else if (line.contains("fullName")) {
-                    employee.setName(line.split(" : ")[1]);
+                    employee.setName(line.split(delimiter)[1].trim());
                 } else if (line.contains("email")) {
-                    employee.setEmail(line.split(" : ")[1]);
+                    employee.setEmail(line.split(delimiter)[1].trim());
                 }
                 if (logicSeparator[1].equals((line))) {
                     employees.add(employee);
                 }
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            log.error("File not found. {}", e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error while reading file. {}", e.getMessage());
         }
+
+    }
+
+    @Override
+    public void logSummary() {
 
     }
 

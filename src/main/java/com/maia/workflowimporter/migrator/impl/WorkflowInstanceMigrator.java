@@ -1,7 +1,8 @@
-package com.maia.workflowimporter.migrator;
+package com.maia.workflowimporter.migrator.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.maia.workflowimporter.migrator.Migrator;
 import com.maia.workflowimporter.model.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -14,23 +15,27 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
-public class WorkflowInstanceMigrator {
+public class WorkflowInstanceMigrator extends BaseMigrator implements Migrator {
 
-    final String[] logicSeparator = {"start", "end"};
-    final String delimiter = ":";
-    @Getter
-    File file;
     @Getter
     List<WorkflowInstance> workflowInstances = new ArrayList<>();
     @Getter
     List<WorkflowInstance> workflowInstancesWithError = new ArrayList<>();
     @Getter
-    List<String> linesOutsideLoop = new ArrayList<>();
+    List<String> unparsableLines = new ArrayList<>();
 
     private EmployeeMigrator employeeMigrator;
     private ContractorMigrator contractorMigrator;
     private WorkflowMigrator workflowMigrator;
 
+    /**
+     * There is strong dependency from other migrators in this one. Using dependency injection via constructor.
+     *
+     * @param file
+     * @param employeeMigrator
+     * @param contractorMigrator
+     * @param workflowMigrator
+     */
     public WorkflowInstanceMigrator(File file,
                                     EmployeeMigrator employeeMigrator,
                                     ContractorMigrator contractorMigrator,
@@ -39,22 +44,36 @@ public class WorkflowInstanceMigrator {
         this.employeeMigrator = employeeMigrator;
         this.contractorMigrator = contractorMigrator;
         this.workflowMigrator = workflowMigrator;
-        parseFile();
     }
 
-    public void parseFile() {
+    /**
+     * initializing all migrators
+     */
+    private void init() {
+        employeeMigrator.parse();
+        contractorMigrator.parse();
+        workflowMigrator.parse();
+    }
+
+    @Override
+    public void parse() {
+        this.init();
+        // try with resources using streamed fileinput for large files
         try (BufferedReader fileBufferReader = new BufferedReader(new FileReader(file))) {
-            String l;
             WorkflowInstance workflowInstance = null;
             boolean insideLoop = false;
             fileBufferReader.readLine(); // skip header
+            String l;
             while ((l = fileBufferReader.readLine()) != null) {
                 String line = l.trim();
+                // start logic
                 if (logicSeparator[0].equals((line))) {
                     workflowInstance = new WorkflowInstance();
                     insideLoop = true;
                     continue;
                 }
+
+                // end logic
                 if (logicSeparator[1].equals((line))) {
                     if (insideLoop) {
                         workflowInstances.add(workflowInstance);
@@ -62,13 +81,16 @@ public class WorkflowInstanceMigrator {
                     insideLoop = false;
                     continue;
                 }
+
+                // loop logic, could be made in a generic way using reflections in the other classes
+                // but would overcomplicate (KISS)
                 if (insideLoop) {
                     final String key;
                     final String value;
-                    final WorkflowInstance finalWorkflowInstance = workflowInstance;
+                    final WorkflowInstance finalWorkflowInstance = workflowInstance; // for lambda
 
                     try {
-                        key = line.split(delimiter)[0].trim();
+                        key = line.split(delimiter)[0].trim(); // TODO dynamic formatting (hardcoded K:V)
                         value = line.split(delimiter)[1].trim();
                     } catch (Exception e) {
                         log.error("Error parsing value." , e);
@@ -78,7 +100,7 @@ public class WorkflowInstanceMigrator {
                     if (key.equals("id")) {
                         workflowInstance.setId(new Long(value));
                     } else if (key.equals("workflowId")) {
-                        // lookup workflow
+                        // lookup workflow table
                         Workflow workflowLookup = workflowMigrator
                                 .getWorkflows()
                                 .stream()
@@ -92,9 +114,9 @@ public class WorkflowInstanceMigrator {
 
                         workflowInstance.setWorkflow(workflowLookup);
 
-                    } else if (key.equals("assignee")) {
+                    } else if (key.equals("assignee")) { // lookup for assignee
                         Assignee assignee = null;
-                        // lookup contractor
+                        // lookup contractor table
                         Optional<Contractor> contractor = contractorMigrator
                                 .getContractors()
                                 .stream()
@@ -103,7 +125,7 @@ public class WorkflowInstanceMigrator {
                         if (contractor.isPresent()) {
                             assignee = contractor.get();
                         } else {
-                            // lookup employee
+                            // lookup employee table
                             Optional<Employee> employee = employeeMigrator
                                     .getEmployees()
                                     .stream()
@@ -113,13 +135,14 @@ public class WorkflowInstanceMigrator {
                             if (employee.isPresent()) {
                                 assignee = employee.get();
                             } else {
+                                // none found
                                 log.warn("Assignee {} not found in lookup contractor/employee.", value);
                                 workflowInstancesWithError.add(finalWorkflowInstance);
                             }
                         }
                         workflowInstance.setAssignee(assignee);
                     } else if (key.equals("step")) {
-                        workflowInstance.setStep(value);
+                        workflowInstance.setStep(WorkflowInstance.Step.lookup(value));
                     } else if (key.equals("status")) {
                         workflowInstance.setStatus(WorkflowInstance.Status.valueOf(value));
                     } else {
@@ -127,8 +150,9 @@ public class WorkflowInstanceMigrator {
                         workflowInstancesWithError.add(workflowInstance);
                     }
                 } else {
+                    // unstructured lines
                     log.error("Not inside loop: {}", line);
-                    linesOutsideLoop.add(line);
+                    unparsableLines.add(line);
                 }
             }
         } catch (FileNotFoundException e) {
@@ -138,6 +162,7 @@ public class WorkflowInstanceMigrator {
         }
     }
 
+    @Override
     public void logSummary() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -145,7 +170,7 @@ public class WorkflowInstanceMigrator {
         log.info(gson.toJson(getWorkflowInstances()));
         log.info("All inconsistent data:");
         log.info("With error / incomplete: {}", gson.toJson(getWorkflowInstancesWithError()));
-        log.info("Unparseable lines: {}", gson.toJson(getLinesOutsideLoop()));
+        log.info("Unparseable lines: {}", gson.toJson(getUnparsableLines()));
 
         List<WorkflowInstance> running = getWorkflowInstances()
                 .stream()
@@ -164,8 +189,7 @@ public class WorkflowInstanceMigrator {
                                 .filter(Contractor.class::isInstance)
                                 .map(Contractor.class::cast)
                                 .map(a-> a.getName())
-                                .collect(toList())
-                ));
+                                .collect(toList())));
     }
 
 }

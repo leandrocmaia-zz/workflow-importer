@@ -1,5 +1,9 @@
 package com.maia.workflowimporter.migrator;
 
+import com.maia.workflowimporter.migrator.impl.ContractorMigrator;
+import com.maia.workflowimporter.migrator.impl.EmployeeMigrator;
+import com.maia.workflowimporter.migrator.impl.WorkflowInstanceMigrator;
+import com.maia.workflowimporter.migrator.impl.WorkflowMigrator;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -31,13 +35,15 @@ public class WorkflowInstanceMigratorTest {
                 new ContractorMigrator(contractorsData),
                 new WorkflowMigrator(workflowsData));
 
+        migrator.parse();
+
     }
 
     @Test
     public void should_read_eachline_and_populate_object() {
         assertEquals(migrator.getWorkflowInstances().size(), 18);
         assertEquals(migrator.getWorkflowInstancesWithError().size(), 2);
-        assertEquals(migrator.getLinesOutsideLoop().size(), 2);
+        assertEquals(migrator.getUnparsableLines().size(), 2);
     }
 
     @Test
@@ -49,9 +55,11 @@ public class WorkflowInstanceMigratorTest {
                 new ContractorMigrator(contractorsData),
                 new WorkflowMigrator(workflowsData));
 
+        migrator.parse();
+
         assertEquals(migrator.getWorkflowInstances().size(), 4);
         assertEquals(migrator.getWorkflowInstancesWithError().size(), 2);
-        assertEquals(migrator.getLinesOutsideLoop().size(), 4);
+        assertEquals(migrator.getUnparsableLines().size(), 4);
     }
 
     @Test
@@ -63,6 +71,8 @@ public class WorkflowInstanceMigratorTest {
                 new EmployeeMigrator(employeesData),
                 new ContractorMigrator(contractorsData),
                 new WorkflowMigrator(workflowsData));
+
+        migrator.parse();
 
         migrator.logSummary();
         assertTrue(true);
