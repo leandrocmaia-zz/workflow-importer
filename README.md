@@ -18,3 +18,4 @@ Application that imports workflow sources and prints a summary.
 should be done before any import is made, or the import should be denied at all.
 - The design depended on the traffic. If very high, should be in parallel. If files are too big (1TB+), a reactive design
 should be favored.
+- Generic parsing wasn't favored due to the different non-standard formats from each source (not json or xml).
