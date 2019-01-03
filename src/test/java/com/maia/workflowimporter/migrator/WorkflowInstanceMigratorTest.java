@@ -11,7 +11,6 @@ import static org.junit.Assert.assertEquals;
 
 public class WorkflowInstanceMigratorTest {
 
-    File file;
     File contractorsData;
     File employeesData;
     File workflowsData;
@@ -24,10 +23,9 @@ public class WorkflowInstanceMigratorTest {
         employeesData = new ClassPathResource("employees.data", getClass().getClassLoader()).getFile();
         workflowsData = new ClassPathResource("workflows.data", getClass().getClassLoader()).getFile();
         workflowInstancesData = new ClassPathResource("workflowInstances.data", getClass().getClassLoader()).getFile();
-        file = new ClassPathResource("workflowInstances.data", getClass().getClassLoader()).getFile();
 
         migrator = new WorkflowInstanceMigrator(
-                file,
+                workflowInstancesData,
                 new EmployeeMigrator(employeesData),
                 new ContractorMigrator(contractorsData),
                 new WorkflowMigrator(workflowsData));
