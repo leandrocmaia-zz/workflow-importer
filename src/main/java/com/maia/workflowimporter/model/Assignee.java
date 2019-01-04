@@ -4,9 +4,8 @@ import lombok.Data;
 
 @Data
 public abstract class Assignee {
-    String name;
-    String email;
+  String name;
+  String email;
 
-    public Assignee() {
-    }
+  public Assignee() {}
 }

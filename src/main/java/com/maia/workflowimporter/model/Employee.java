@@ -4,10 +4,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper = false)
 public class Employee extends Assignee {
-    String id;
+  String id;
 
-    public Employee() {
-    }
+  public Employee() {}
 }

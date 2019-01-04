@@ -4,15 +4,14 @@ import lombok.Data;
 
 @Data
 public class Workflow {
-    Long id;
-    String name;
-    String author;
-    Integer version;
+  Long id;
+  String name;
+  String author;
+  Integer version;
 
-    public Workflow() {
-    }
+  public Workflow() {}
 
-    public Workflow(Long id) {
-        this.id = id;
-    }
+  public Workflow(Long id) {
+    this.id = id;
+  }
 }
