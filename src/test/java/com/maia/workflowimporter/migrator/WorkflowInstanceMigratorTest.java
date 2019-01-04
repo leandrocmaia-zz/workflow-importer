@@ -13,6 +13,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -59,6 +60,12 @@ public class WorkflowInstanceMigratorTest {
         assertTrue(migrator.getWorkflowInstances().get(3).getAssignee() instanceof Contractor);
         assertTrue(migrator.getWorkflowInstances().get(4).getAssignee() instanceof Contractor);
         assertTrue(migrator.getWorkflowInstances().get(5).getAssignee() instanceof Employee);
+
+        assertEquals(migrator.getWorkflowInstances()
+                .stream()
+                .filter(a -> a.getStep() != null) // filtering out incompletes without step
+                .filter(a -> a.getStep().equals(WorkflowInstance.Step.UNDEFINED)) // no Step lookup should have failed
+                .findAny(), Optional.empty());
 
     }
 
