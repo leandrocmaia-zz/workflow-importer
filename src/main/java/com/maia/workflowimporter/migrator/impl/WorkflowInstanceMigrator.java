@@ -17,13 +17,27 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public class WorkflowInstanceMigrator extends BaseMigrator implements Migrator {
 
+    /**
+     * all entries that could be parsed (incomplete or not)
+     */
     @Getter
     List<WorkflowInstance> workflowInstances = new ArrayList<>();
+
+    /**
+     * entries that failed to parse, attributes not found or no lookup was found.
+     */
     @Getter
     List<WorkflowInstance> workflowInstancesWithError = new ArrayList<>();
+
+    /**
+     * lines outside start/end loop
+     */
     @Getter
     List<String> unparsableLines = new ArrayList<>();
 
+    /**
+     * migrators that depends on
+     */
     private EmployeeMigrator employeeMigrator;
     private ContractorMigrator contractorMigrator;
     private WorkflowMigrator workflowMigrator;
@@ -109,7 +123,7 @@ public class WorkflowInstanceMigrator extends BaseMigrator implements Migrator {
                                 .orElseGet(() -> {
                                     log.warn("Workflow {} not found in lookup.", value);
                                     workflowInstancesWithError.add(finalWorkflowInstance);
-                                    return new Workflow(new Long(value));
+                                    return new Workflow(new Long(value)); // in case of being persistable later
                                 });
 
                         workflowInstance.setWorkflow(workflowLookup);
@@ -162,6 +176,14 @@ public class WorkflowInstanceMigrator extends BaseMigrator implements Migrator {
         }
     }
 
+    /**
+     * display in json some summaries;
+     *
+     * • Showing any inconsistent entries.
+     * • Showing all workflows with their according instances.
+     * • Showing all workflows having running instances and the number of those instances.
+     * • Showing all contractors that are assignees to running instances
+     */
     @Override
     public void logSummary() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -183,7 +205,7 @@ public class WorkflowInstanceMigrator extends BaseMigrator implements Migrator {
                 gson.toJson(running));
 
 
-        log.info("All contractors who are assigned to instances: {}",
+        log.info("All contractors who are assigned to running instances: {}",
                 gson.toJson(
                         running.stream()
                                 .filter(Contractor.class::isInstance)

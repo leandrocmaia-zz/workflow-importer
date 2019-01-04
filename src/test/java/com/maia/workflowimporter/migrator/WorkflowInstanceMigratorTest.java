@@ -4,6 +4,9 @@ import com.maia.workflowimporter.migrator.impl.ContractorMigrator;
 import com.maia.workflowimporter.migrator.impl.EmployeeMigrator;
 import com.maia.workflowimporter.migrator.impl.WorkflowInstanceMigrator;
 import com.maia.workflowimporter.migrator.impl.WorkflowMigrator;
+import com.maia.workflowimporter.model.Contractor;
+import com.maia.workflowimporter.model.Employee;
+import com.maia.workflowimporter.model.WorkflowInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -44,6 +47,19 @@ public class WorkflowInstanceMigratorTest {
         assertEquals(migrator.getWorkflowInstances().size(), 18);
         assertEquals(migrator.getWorkflowInstancesWithError().size(), 2);
         assertEquals(migrator.getUnparsableLines().size(), 2);
+
+        assertEquals(migrator.getWorkflowInstances().get(0).getStatus(), WorkflowInstance.Status.NEW);
+        assertEquals(migrator.getWorkflowInstances().get(0).getStep(), WorkflowInstance.Step.APPROVED);
+        assertEquals(migrator.getWorkflowInstances().get(1).getStatus(), WorkflowInstance.Status.RUNNING);
+        assertEquals(migrator.getWorkflowInstances().get(1).getStep(), WorkflowInstance.Step.READY_FOR_ARCHIVING);
+
+        assertTrue(migrator.getWorkflowInstances().get(0).getAssignee() instanceof Employee);
+        assertTrue(migrator.getWorkflowInstances().get(1).getAssignee() instanceof Employee);
+        assertTrue(migrator.getWorkflowInstances().get(2).getAssignee() instanceof Employee);
+        assertTrue(migrator.getWorkflowInstances().get(3).getAssignee() instanceof Contractor);
+        assertTrue(migrator.getWorkflowInstances().get(4).getAssignee() instanceof Contractor);
+        assertTrue(migrator.getWorkflowInstances().get(5).getAssignee() instanceof Employee);
+
     }
 
     @Test

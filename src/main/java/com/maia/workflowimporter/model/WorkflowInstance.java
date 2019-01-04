@@ -1,8 +1,8 @@
 package com.maia.workflowimporter.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 
@@ -18,10 +18,10 @@ public class WorkflowInstance {
         RUNNING, NEW, DONE, PAUSED;
     }
 
-    @RequiredArgsConstructor
+    @AllArgsConstructor
     public enum Step {
         APPROVED("approved"),
-        READY_FOR_ARCHIVING("reay for archiving"),
+        READY_FOR_ARCHIVING("ready for archiving"),
         SUPERVISOR_APPROVAL("supervisor approval"),
         WAITING_FOR_FEEDBACK("waiting for feedback"),
         INITIAL("initial"),
